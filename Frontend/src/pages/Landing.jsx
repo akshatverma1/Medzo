@@ -11,13 +11,13 @@ export default function Landing() {
             Manage appointments, monitor activity, and track key metrics in a single, secure place.
           </p>
           <div className="row wrap gap-12 mt-20" id="roles">
-            <Link className="btn btn-primary" to="/dashboard?role=patient">
+            <Link className="btn btn-primary" to="/patientlogin">
               I am a Patient
             </Link>
-            <Link className="btn btn-secondary" to="/dashboard?role=hospital">
+            <Link className="btn btn-secondary" to="/hospitallogin">
               For Hospital
             </Link>
-            <Link className="btn btn-outline" to="/dashboard?role=doctor">
+            <Link className="btn btn-outline" to="/doctorlogin">
               I am a Doctor
             </Link>
           </div>

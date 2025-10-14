@@ -4,6 +4,7 @@ import { Input } from "../ui/input.js"
 import { Label } from "../ui/label.js"
 import { Textarea } from "../ui/textarea.js"
 import { Button } from "../ui/button.js"
+import React from 'react';
 
 export default function HospitalRegistrationPage() {
   function onSubmit(e) {

@@ -1,24 +1,30 @@
-"use client"
+"use client";
+import React from 'react';
 
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
-import { Textarea } from "../ui/textarea"
-import { Button } from "../ui/button"
-import Link from "next/link"
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
+import { Button } from "../ui/button";
+import { Link } from "react-router-dom"; // ✅ Changed import
 
 export default function PatientRegistrationPage() {
   function onSubmit(e) {
-    e.preventDefault()
-    const data = Object.fromEntries(new FormData(e.currentTarget).entries())
-    alert("Patient registered! (demo)\n" + JSON.stringify(data, null, 2))
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.currentTarget).entries());
+    alert("Patient registered! (demo)\n" + JSON.stringify(data, null, 2));
   }
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
       <h1 className="text-3xl font-semibold">Patient Registration</h1>
-      <p className="mt-2 text-muted-foreground">Create your profile to book and manage appointments.</p>
+      <p className="mt-2 text-muted-foreground">
+        Create your profile to book and manage appointments.
+      </p>
 
-      <form onSubmit={onSubmit} className="mt-8 space-y-6 rounded-lg border border-border bg-card p-6">
+      <form
+        onSubmit={onSubmit}
+        className="mt-8 space-y-6 rounded-lg border border-border bg-card p-6"
+      >
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <Label htmlFor="fullName">Full name</Label>
@@ -67,11 +73,11 @@ export default function PatientRegistrationPage() {
 
         <div className="flex items-center gap-3">
           <Button type="submit">Create account</Button>
-          <Link href="/dashboard?role=patient" className="text-sm underline">
+          <Link to="/dashboard?role=patient" className="text-sm underline">
             Skip and view dashboard
           </Link>
         </div>
       </form>
     </main>
-  )
+  );
 }
