@@ -1,0 +1,72 @@
+[
+  {
+    "name": "City Care Hospital",
+    "address": {
+      "city": "Delhi",
+      "state": "Delhi",
+      "country": "India"
+    },
+    "phone": "011-23456789",
+    "email": "contact@citycarehospital.com",
+    "capacityBeds": 150,
+    "ventilatorCount": 20,
+    "equipment": ["ECG Machine", "X-Ray", "MRI Scanner", "Ventilators"],
+    "createdAt": "2025-10-14T10:00:00Z"
+  },
+  {
+    "name": "Sunrise Medical Center",
+    "address": {
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India"
+    },
+    "phone": "022-98765432",
+    "email": "info@sunrisemedical.com",
+    "capacityBeds": 200,
+    "ventilatorCount": 35,
+    "equipment": ["Ultrasound", "CT Scanner", "Ventilators", "Defibrillator"],
+    "createdAt": "2025-10-14T11:00:00Z"
+  },
+  {
+    "name": "Green Valley Hospital",
+    "address": {
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "India"
+    },
+    "phone": "080-12345678",
+    "email": "contact@greenvalleyhospital.com",
+    "capacityBeds": 120,
+    "ventilatorCount": 15,
+    "equipment": ["ECG Machine", "X-Ray", "Laboratory Equipment", "Ventilators"],
+    "createdAt": "2025-10-14T12:00:00Z"
+  },
+  {
+    "name": "Hope Multispeciality Hospital",
+    "address": {
+      "city": "Ahmedabad",
+      "state": "Gujarat",
+      "country": "India"
+    },
+    "phone": "079-87654321",
+    "email": "info@hopemultihospital.com",
+    "capacityBeds": 180,
+    "ventilatorCount": 25,
+    "equipment": ["MRI Scanner", "CT Scanner", "Ventilators", "Dialysis Machine"],
+    "createdAt": "2025-10-14T09:30:00Z"
+  },
+  {
+    "name": "Lakeside Hospital",
+    "address": {
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "country": "India"
+    },
+    "phone": "044-34567890",
+    "email": "contact@lakesidehospital.com",
+    "capacityBeds": 100,
+    "ventilatorCount": 10,
+    "equipment": ["X-Ray", "Ultrasound", "Ventilators", "Laboratory Equipment"],
+    "createdAt": "2025-10-14T08:45:00Z"
+  }
+]

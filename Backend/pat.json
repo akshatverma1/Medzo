@@ -1,0 +1,82 @@
+[
+  {
+    "firstName": "Rohan",
+    "lastName": "Sharma",
+    "email": "rohan.sharma@example.com",
+    "phone": "9876543210",
+    "age": 32,
+    "gender": "Male",
+    "address": {
+      "city": "Delhi",
+      "state": "Delhi",
+      "country": "India"
+    },
+    "medicalHistory": ["Diabetes", "Hypertension"],
+    "assignedDoctor": "64f9b0c8f1a2b3c4d5e6f7a8",
+    "createdAt": "2025-10-14T10:00:00Z"
+  },
+  {
+    "firstName": "Priya",
+    "lastName": "Mehta",
+    "email": "priya.mehta@example.com",
+    "phone": "9123456780",
+    "age": 27,
+    "gender": "Female",
+    "address": {
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "country": "India"
+    },
+    "medicalHistory": ["Asthma"],
+    "assignedDoctor": "64f9b0c8f1a2b3c4d5e6f7a9",
+    "createdAt": "2025-10-14T11:30:00Z"
+  },
+  {
+    "firstName": "Amit",
+    "lastName": "Kumar",
+    "email": "amit.kumar@example.com",
+    "phone": "9988776655",
+    "age": 45,
+    "gender": "Male",
+    "address": {
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "country": "India"
+    },
+    "medicalHistory": ["High Cholesterol"],
+    "assignedDoctor": "64f9b0c8f1a2b3c4d5e6f7aa",
+    "createdAt": "2025-10-14T12:15:00Z"
+  },
+  {
+    "firstName": "Sneha",
+    "lastName": "Patel",
+    "email": "sneha.patel@example.com",
+    "phone": "9871234560",
+    "age": 36,
+    "gender": "Female",
+    "address": {
+      "city": "Ahmedabad",
+      "state": "Gujarat",
+      "country": "India"
+    },
+    "medicalHistory": ["Migraine", "Vitamin D Deficiency"],
+    "assignedDoctor": "64f9b0c8f1a2b3c4d5e6f7ab",
+    "createdAt": "2025-10-14T09:45:00Z"
+  },
+  {
+    "firstName": "Vikram",
+    "lastName": "Singh",
+    "email": "vikram.singh@example.com",
+    "phone": "9012345678",
+    "age": 50,
+    "gender": "Male",
+    "address": {
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "country": "India"
+    },
+    "medicalHistory": ["Arthritis"],
+    "assignedDoctor": "64f9b0c8f1a2b3c4d5e6f7ac",
+    "createdAt": "2025-10-14T08:20:00Z"
+  }
+]
