@@ -10,6 +10,10 @@ import ApiServicesPage from "./pages/Apiservices.jsx"
 import DoctorLogin from "./pages/Login/Doctor_Login.jsx"
 import PatientLogin from "./pages/Login/Patient_Login.jsx"
 import HospitalLogin from "./pages/Login/Hosiptal_Login.jsx"
+import Hospital_dashboard from "./pages/Hosiptal_dashboard.jsx";
+import Doctor_dashboard from "./pages/Doctor_dashboard.jsx";
+import Patient_dashboard from "./pages/Paitent_dashboard.jsx";
+import API_SAAS from "./pages/API_SAAS.jsx";
 import React from 'react';
 
 export default function App() {
@@ -19,7 +23,7 @@ export default function App() {
         <div className="container row-between py-16">
           <div className="row gap-8">
             <div className="logo" aria-hidden="true"></div>
-            <span className="brand">CareLink</span>
+            <span className="brand">Medzo</span>
           </div>
           <nav className="row gap-16 text-sm">
             <Link className="link" to="/">
@@ -37,7 +41,7 @@ export default function App() {
             <Link className="link" to="/contact">
               Contact
             </Link>
-            <Link className="link" to="/api">
+            <Link className="link" to="/api_saas">
               Api Services
             </Link>
           </nav>
@@ -56,6 +60,10 @@ export default function App() {
         <Route path="/doctorlogin" element ={<DoctorLogin></DoctorLogin>}></Route>
         <Route path="/patientlogin" element ={<PatientLogin></PatientLogin>}></Route>
         <Route path="/hospitallogin" element ={<HospitalLogin></HospitalLogin>}></Route>
+        <Route path="/hd" element ={<Hospital_dashboard></Hospital_dashboard>}></Route>
+        <Route path="/dd" element ={<Doctor_dashboard></Doctor_dashboard>}></Route>
+        <Route path="/pd" element ={<Patient_dashboard></Patient_dashboard>}></Route>
+        <Route path="/api_saas" element ={<API_SAAS></API_SAAS>}></Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
@@ -64,7 +72,7 @@ export default function App() {
           <div className="col-span-2">
             <div className="row gap-8">
               <div className="logo" aria-hidden="true"></div>
-              <span className="brand">CareLink</span>
+              <span className="brand">Medzo</span>
             </div>
             <p className="muted mt-12">
               CareLink is a modern hospital platform that unifies patients, hospitals, and doctors in one dashboard.
