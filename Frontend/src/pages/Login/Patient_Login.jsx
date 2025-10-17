@@ -22,10 +22,10 @@ export default function PatientLoginPage() {
 
   return (
     <main className="container mx-auto max-w-5xl px-4 py-10">
-      <header className="mb-8">
+      {/* <header className="mb-8">
         <h1 className="text-3xl font-semibold text-pretty">Patient Login</h1>
         <p className="text-muted-foreground">Access your medical records and appointments.</p>
-      </header>
+      </header> */}
       
       {/* Custom Login Form */}
       <div className="max-w-md mx-auto">

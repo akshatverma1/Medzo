@@ -35,15 +35,75 @@ export default function Landing() {
 
       <section id="services" className="container pb-40">
         <div className="card p-20">
-          <h2 className="h2">Services for your hospital stack</h2>
-          <p className="muted mt-8">
-            CareLink is a healthcare SaaS that connects patients, hospitals, and doctors. Integrate with our API,
-            automate scheduling, and sync data securely with existing systems.
-          </p>
-          <div className="grid-3 gap-16 mt-20">
-            <div className="card p-16">
-              <h3 className="h4">REST API</h3>
-              <p className="muted mt-8">Create/read appointments, patients, and doctors with secure tokens.</p>
+          <div className="services-header">
+            <h2 className="h2">Healthcare Platform Features</h2>
+            <p className="subtitle muted mt-8">
+              Comprehensive tools for modern healthcare communication and management
+            </p>
+          </div>
+          
+          <div className="services-grid mt-20">
+            {/* Open Chat */}
+            <div className="service-card card p-16">
+              <div className="service-icon">💬</div>
+              <h3 className="h4">Open Chat</h3>
+              <p className="muted mt-8">Public community chat for healthcare discussions and knowledge sharing.</p>
+            </div>
+            
+            {/* Private Messaging */}
+            <div className="service-card card p-16">
+              <div className="service-icon">🔒</div>
+              <h3 className="h4">Private Messaging</h3>
+              <p className="muted mt-8">Secure one-on-one conversations between patients and healthcare providers.</p>
+            </div>
+            
+            {/* Appointment Booking */}
+            <div className="service-card card p-16">
+              <div className="service-icon">📅</div>
+              <h3 className="h4">Appointment Booking</h3>
+              <p className="muted mt-8">Easy scheduling with real-time availability and confirmation notifications.</p>
+            </div>
+            
+            {/* Medical History */}
+            <div className="service-card card p-16">
+              <div className="service-icon">📋</div>
+              <h3 className="h4">Medical History</h3>
+              <p className="muted mt-8">Digital access to patient records, test results, and treatment history.</p>
+            </div>
+            
+            {/* Hospital Locator */}
+            <div className="service-card card p-16">
+              <div className="service-icon">🏥</div>
+              <h3 className="h4">Hospital Locator</h3>
+              <p className="muted mt-8">Find nearby medical facilities with detailed information and directions.</p>
+            </div>
+            
+            {/* Doctor Directory */}
+            <div className="service-card card p-16">
+              <div className="service-icon">👨‍⚕️</div>
+              <h3 className="h4">Doctor Directory</h3>
+              <p className="muted mt-8">Comprehensive directory of healthcare professionals with specialties and availability.</p>
+            </div>
+            
+            {/* Emergency Services */}
+            <div className="service-card card p-16">
+              <div className="service-icon">🚑</div>
+              <h3 className="h4">Emergency Services</h3>
+              <p className="muted mt-8">Quick access to emergency contacts and nearby emergency rooms.</p>
+            </div>
+            
+            {/* Health Records */}
+            <div className="service-card card p-16">
+              <div className="service-icon">📊</div>
+              <h3 className="h4">Health Records</h3>
+              <p className="muted mt-8">Secure storage and management of personal health information.</p>
+            </div>
+
+            {/* API Integration */}
+            <div className="service-card card p-16">
+              <div className="service-icon">🔌</div>
+              <h3 className="h4">API Integration</h3>
+              <p className="muted mt-8">Seamlessly connect with existing healthcare systems and applications.</p>
               <pre className="code mt-16">{`POST /v1/appointments
 Authorization: Bearer <token>
 {
@@ -52,11 +112,24 @@ Authorization: Bearer <token>
   "time": "2025-10-20T09:00:00Z"
 }`}</pre>
             </div>
-            <div className="card p-16">
+
+            {/* Financial Tools */}
+            <div className="service-card card p-16">
+              <div className="service-icon">💰</div>
+              <h3 className="h4">Financial Tools</h3>
+              <p className="muted mt-8">Manage billing, insurance claims, and payment processing efficiently.</p>
+            </div>
+
+            {/* Webhooks */}
+            <div className="service-card card p-16">
+              <div className="service-icon">🔄</div>
               <h3 className="h4">Webhooks</h3>
               <p className="muted mt-8">Real-time updates for bookings, cancellations, and status changes.</p>
             </div>
-            <div className="card p-16">
+
+            {/* EHR Integrations */}
+            <div className="service-card card p-16">
+              <div className="service-icon">🏥</div>
               <h3 className="h4">EHR Integrations</h3>
               <p className="muted mt-8">Optional connectors to sync records compliantly.</p>
             </div>
@@ -90,6 +163,85 @@ Authorization: Bearer <token>
           </CardLink>
         </div>
       </section>
+
+      <style jsx>{`
+        .services-header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        
+        .services-header .h2 {
+          font-size: 2.5rem;
+          color: #1e293b;
+          margin-bottom: 15px;
+          font-weight: 700;
+        }
+        
+        .subtitle {
+          font-size: 1.2rem;
+          max-width: 600px;
+          margin: 0 auto;
+          line-height: 1.6;
+        }
+        
+        .services-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 25px;
+        }
+        
+        .service-card {
+          transition: all 0.3s ease;
+          text-align: center;
+          border: 1px solid #e2e8f0;
+        }
+        
+        .service-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+          border-color: #3b82f6;
+        }
+        
+        .service-icon {
+          font-size: 2.5rem;
+          margin-bottom: 20px;
+          display: block;
+        }
+        
+        .service-card .h4 {
+          font-size: 1.3rem;
+          color: #1e293b;
+          margin-bottom: 15px;
+          font-weight: 600;
+        }
+        
+        .service-card .muted {
+          line-height: 1.6;
+          font-size: 0.95rem;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .services-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+          }
+          
+          .services-header .h2 {
+            font-size: 2rem;
+          }
+          
+          .subtitle {
+            font-size: 1.1rem;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .services-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </main>
   )
 }

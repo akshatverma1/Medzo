@@ -22,10 +22,11 @@ export default function HospitalLoginPage() {
 
   return (
     <main className="container mx-auto max-w-5xl px-4 py-10">
-      <header className="mb-8">
+      <div style={{height:"5rem"}}></div>
+      {/* <header className="mb-8">
         <h1 className="text-3xl font-semibold text-pretty">Hospital Admin Login</h1>
         <p className="text-muted-foreground">Manage hospital operations, staff, and resources.</p>
-      </header>
+      </header> */}
       
       {/* Custom Login Form */}
       <div className="max-w-md mx-auto">
