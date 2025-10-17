@@ -1,25 +1,116 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import React from 'react';
+
+// Dynamic import for Leaflet to avoid SSR issues
+const DynamicMap = ({ center, onLocationSelect }) => {
+  const [MapContainer, setMapContainer] = useState(null);
+  const [TileLayer, setTileLayer] = useState(null);
+  const [Marker, setMarker] = useState(null);
+  const [Popup, setPopup] = useState(null);
+  const [useMapEvents, setUseMapEvents] = useState(null);
+
+  useEffect(() => {
+    const loadLeaflet = async () => {
+      const L = await import('leaflet');
+      await import('leaflet/dist/leaflet.css');
+      
+      // Fix for default markers in Next.js
+      delete L.Icon.Default.prototype._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      });
+
+      const { MapContainer: MC, TileLayer: TL, Marker: M, Popup: P, useMapEvents: UME } = await import('react-leaflet');
+      setMapContainer(() => MC);
+      setTileLayer(() => TL);
+      setMarker(() => M);
+      setPopup(() => P);
+      setUseMapEvents(() => UME);
+    };
+
+    loadLeaflet();
+  }, []);
+
+  // Map events component
+  const MapEvents = () => {
+    const map = useMapEvents({
+      click: (e) => {
+        const { lat, lng } = e.latlng;
+        onLocationSelect(lat, lng);
+      },
+    });
+    return null;
+  };
+
+  if (!MapContainer || !TileLayer || !Marker) {
+    return (
+      <div className="h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading map...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <MapContainer 
+      center={center} 
+      zoom={13} 
+      style={{ height: '100%', width: '100%' }}
+      className="rounded-lg"
+    >
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      />
+      <Marker position={center}>
+        <Popup>
+          Doctor Location <br />
+          Lat: {center[0].toFixed(6)}, Lng: {center[1].toFixed(6)}
+        </Popup>
+      </Marker>
+      <MapEvents />
+    </MapContainer>
+  );
+};
 
 export default function RegisterDoctor() {
   const [form, setForm] = useState({ 
-    firstName: "", 
-    lastName: "", 
-    email: "", 
-    phone: "", 
-    specialty: "", 
-    qualifications: "", 
-    hospital: "" 
+    name: "",
+    age: "",
+    permanentAddress: "",
+    geoLocation: {
+      latitude: 0,
+      longitude: 0
+    },
+    experience: "",
+    specialization: "",
+    timeShift: "",
+    degree: "",
+    visitingFees: "",
+    approxPatientCount: "",
+    organization: "",
+    password: "",
+    calendar: [],
+    gender: "",
+    email: "",
+    phone: ""
   });
+  
   const [doctors, setDoctors] = useState([]);
   const [hospitals, setHospitals] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Use your API base URL
+  // Use your API base URL - Fixed to port 5000
   const API_BASE = 'http://127.0.0.1:3000';
 
   // Fetch doctors and hospitals on component mount
@@ -27,7 +118,70 @@ export default function RegisterDoctor() {
     console.log('🔄 Component mounted - fetching initial data');
     fetchDoctors();
     fetchHospitals();
+    getCurrentLocation();
   }, []);
+
+  // Get current location
+  const getCurrentLocation = () => {
+    setIsGettingLocation(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setForm(prev => ({
+            ...prev,
+            geoLocation: {
+              latitude: lat,
+              longitude: lng
+            }
+          }));
+          setMapLoaded(true);
+          setIsGettingLocation(false);
+        },
+        (error) => {
+          console.log('Geolocation error:', error);
+          // Default coordinates if geolocation fails
+          setForm(prev => ({
+            ...prev,
+            geoLocation: {
+              latitude: 28.6139,
+              longitude: 77.2090
+            }
+          }));
+          setMapLoaded(true);
+          setIsGettingLocation(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      );
+    } else {
+      // Default coordinates if geolocation not supported
+      setForm(prev => ({
+        ...prev,
+        geoLocation: {
+          latitude: 28.6139,
+          longitude: 77.2090
+        }
+      }));
+      setMapLoaded(true);
+      setIsGettingLocation(false);
+    }
+  };
+
+  // Handle location selection from map
+  const handleLocationSelect = (lat, lng) => {
+    setForm(prev => ({
+      ...prev,
+      geoLocation: {
+        latitude: lat,
+        longitude: lng
+      }
+    }));
+  };
 
   // Create or Update Doctor
   async function onSubmit(e) {
@@ -36,10 +190,27 @@ export default function RegisterDoctor() {
     setError("");
     
     try {
-      // Format qualifications as array
+      // Format data for backend according to new schema
       const doctorData = {
-        ...form,
-        qualifications: form.qualifications ? form.qualifications.split(',').map(q => q.trim()) : []
+        name: form.name,
+        age: parseInt(form.age) || 0,
+        permanentAddress: form.permanentAddress,
+        geoLocation: {
+          latitude: parseFloat(form.geoLocation.latitude),
+          longitude: parseFloat(form.geoLocation.longitude)
+        },
+        experience: parseInt(form.experience) || 0,
+        specialization: form.specialization,
+        timeShift: form.timeShift,
+        degree: form.degree ? form.degree.split(',').map(item => item.trim()) : [],
+        visitingFees: parseInt(form.visitingFees) || 0,
+        approxPatientCount: parseInt(form.approxPatientCount) || 0,
+        organization: form.organization,
+        password: form.password,
+        calendar: form.calendar,
+        gender: form.gender,
+        email: form.email,
+        phone: form.phone
       };
 
       const url = editingId 
@@ -166,13 +337,30 @@ export default function RegisterDoctor() {
       const doctor = await response.json();
       console.log('✅ Single doctor data:', doctor);
       
-      // Format qualifications for display
+      // Format data for form according to new schema
       setForm({
-        ...doctor,
-        qualifications: doctor.qualifications ? doctor.qualifications.join(', ') : '',
-        hospital: doctor.hospital?._id || ''
+        name: doctor.name || "",
+        age: doctor.age?.toString() || "",
+        permanentAddress: doctor.permanentAddress || "",
+        geoLocation: {
+          latitude: doctor.geoLocation?.latitude || 0,
+          longitude: doctor.geoLocation?.longitude || 0
+        },
+        experience: doctor.experience?.toString() || "",
+        specialization: doctor.specialization || "",
+        timeShift: doctor.timeShift || "",
+        degree: doctor.degree ? doctor.degree.join(', ') : "",
+        visitingFees: doctor.visitingFees?.toString() || "",
+        approxPatientCount: doctor.approxPatientCount?.toString() || "",
+        organization: doctor.organization?._id || "",
+        password: doctor.password || "",
+        calendar: doctor.calendar || [],
+        gender: doctor.gender || "",
+        email: doctor.email || "",
+        phone: doctor.phone || ""
       });
       setEditingId(doctor._id);
+      setMapLoaded(true);
     } catch (error) {
       console.error('💥 Error fetching doctor:', error);
       setError(`Failed to fetch doctor: ${error.message}`);
@@ -215,13 +403,25 @@ export default function RegisterDoctor() {
   function resetForm() {
     console.log('🔄 Resetting form');
     setForm({ 
-      firstName: "", 
-      lastName: "", 
-      email: "", 
-      phone: "", 
-      specialty: "", 
-      qualifications: "", 
-      hospital: "" 
+      name: "",
+      age: "",
+      permanentAddress: "",
+      geoLocation: {
+        latitude: form.geoLocation.latitude, // Keep current location
+        longitude: form.geoLocation.longitude
+      },
+      experience: "",
+      specialization: "",
+      timeShift: "",
+      degree: "",
+      visitingFees: "",
+      approxPatientCount: "",
+      organization: "",
+      password: "",
+      calendar: [],
+      gender: "",
+      email: "",
+      phone: ""
     });
     setEditingId(null);
     setError("");
@@ -229,14 +429,31 @@ export default function RegisterDoctor() {
 
   function handleEdit(doctor) {
     console.log('✏️ Editing doctor:', doctor);
-    // Format qualifications for display
+    // Format data for form according to new schema
     setForm({
-      ...doctor,
-      qualifications: doctor.qualifications ? doctor.qualifications.join(', ') : '',
-      hospital: doctor.hospital?._id || ''
+      name: doctor.name || "",
+      age: doctor.age?.toString() || "",
+      permanentAddress: doctor.permanentAddress || "",
+      geoLocation: {
+        latitude: doctor.geoLocation?.latitude || 0,
+        longitude: doctor.geoLocation?.longitude || 0
+      },
+      experience: doctor.experience?.toString() || "",
+      specialization: doctor.specialization || "",
+      timeShift: doctor.timeShift || "",
+      degree: doctor.degree ? doctor.degree.join(', ') : "",
+      visitingFees: doctor.visitingFees?.toString() || "",
+      approxPatientCount: doctor.approxPatientCount?.toString() || "",
+      organization: doctor.organization?._id || "",
+      password: doctor.password || "",
+      calendar: doctor.calendar || [],
+      gender: doctor.gender || "",
+      email: doctor.email || "",
+      phone: doctor.phone || ""
     });
     setEditingId(doctor._id);
     setError("");
+    setMapLoaded(true);
   }
 
   function handleCancel() {
@@ -325,51 +542,197 @@ export default function RegisterDoctor() {
             {editingId ? 'Edit Doctor' : 'Register New Doctor'}
           </h2>
           <form onSubmit={onSubmit} className="space-y-4">
+            <Field 
+              label="Doctor Name" 
+              value={form.name} 
+              onChange={(v) => setForm({ ...form, name: v })} 
+              required
+            />
+            
             <div className="grid grid-cols-2 gap-4">
               <Field 
-                label="First Name" 
-                value={form.firstName} 
-                onChange={(v) => setForm({ ...form, firstName: v })} 
+                type="number"
+                label="Age" 
+                value={form.age} 
+                onChange={(v) => setForm({ ...form, age: v })} 
+                min="18"
+                max="100"
+                required
+              />
+              <div>
+                <span className="block text-sm font-medium text-gray-700 mb-1">Gender</span>
+                <select 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={form.gender} 
+                  onChange={(e) => setForm({ ...form, gender: e.target.value })} 
+                  required
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            
+            <Field 
+              type="textarea"
+              label="Permanent Address" 
+              value={form.permanentAddress} 
+              onChange={(v) => setForm({ ...form, permanentAddress: v })} 
+              placeholder="Complete permanent address"
+              required
+            />
+            
+            {/* Geolocation Section */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <div className="flex justify-between items-center mb-3">
+                <span className="block text-sm font-medium text-gray-700">Location Selection</span>
+                <button 
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={getCurrentLocation}
+                  disabled={isGettingLocation}
+                >
+                  {isGettingLocation ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Getting Location...
+                    </>
+                  ) : (
+                    '📍 Get My Location'
+                  )}
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <span className="text-xs text-gray-500">Latitude</span>
+                  <input 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    type="number" 
+                    step="any"
+                    value={form.geoLocation.latitude} 
+                    onChange={(e) => setForm({ 
+                      ...form, 
+                      geoLocation: { 
+                        ...form.geoLocation, 
+                        latitude: parseFloat(e.target.value) || 0 
+                      } 
+                    })} 
+                    required
+                  />
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">Longitude</span>
+                  <input 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    type="number" 
+                    step="any"
+                    value={form.geoLocation.longitude} 
+                    onChange={(e) => setForm({ 
+                      ...form, 
+                      geoLocation: { 
+                        ...form.geoLocation, 
+                        longitude: parseFloat(e.target.value) || 0 
+                      } 
+                    })} 
+                    required
+                  />
+                </div>
+              </div>
+              
+              <p className="text-xs text-gray-500 mb-3">
+                Click on the map below to set location, or use "Get My Location" button
+              </p>
+            </div>
+
+            {/* Interactive Map */}
+            {mapLoaded && (
+              <div className="border rounded-lg p-4 bg-white">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Select Location on Map</h4>
+                <div className="h-64 rounded-lg overflow-hidden">
+                  <DynamicMap 
+                    center={[form.geoLocation.latitude, form.geoLocation.longitude]}
+                    onLocationSelect={handleLocationSelect}
+                  />
+                </div>
+                <div className="mt-2 text-center">
+                  <p className="text-sm text-gray-600">
+                    Current: Lat: {form.geoLocation.latitude.toFixed(6)}, Lng: {form.geoLocation.longitude.toFixed(6)}
+                  </p>
+                  <a 
+                    href={`https://www.openstreetmap.org/?mlat=${form.geoLocation.latitude}&mlon=${form.geoLocation.longitude}#map=15/${form.geoLocation.latitude}/${form.geoLocation.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 text-sm underline mt-1 inline-block"
+                  >
+                    View on OpenStreetMap
+                  </a>
+                </div>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-2 gap-4">
+              <Field 
+                type="number"
+                label="Experience (years)" 
+                value={form.experience} 
+                onChange={(v) => setForm({ ...form, experience: v })} 
+                min="0"
+                max="50"
+                required
               />
               <Field 
-                label="Last Name" 
-                value={form.lastName} 
-                onChange={(v) => setForm({ ...form, lastName: v })} 
+                label="Specialization" 
+                value={form.specialization} 
+                onChange={(v) => setForm({ ...form, specialization: v })} 
+                placeholder="Cardiology, Neurology, etc."
+                required
               />
             </div>
             
             <Field 
-              type="email" 
-              label="Email" 
-              value={form.email} 
-              onChange={(v) => setForm({ ...form, email: v })} 
+              label="Time Shift" 
+              value={form.timeShift} 
+              onChange={(v) => setForm({ ...form, timeShift: v })} 
+              placeholder="9AM-5PM, Night Shift, etc."
+              required
             />
             
             <Field 
-              label="Phone" 
-              value={form.phone} 
-              onChange={(v) => setForm({ ...form, phone: v })} 
+              label="Degree (comma-separated)" 
+              value={form.degree} 
+              onChange={(v) => setForm({ ...form, degree: v })} 
+              placeholder="MBBS, MD, MS, PhD"
             />
             
-            <Field 
-              label="Specialty" 
-              value={form.specialty} 
-              onChange={(v) => setForm({ ...form, specialty: v })} 
-            />
-            
-            <Field 
-              label="Qualifications (comma-separated)" 
-              value={form.qualifications} 
-              onChange={(v) => setForm({ ...form, qualifications: v })} 
-              placeholder="MD, MBBS, PhD"
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <Field 
+                type="number"
+                label="Visiting Fees (₹)" 
+                value={form.visitingFees} 
+                onChange={(v) => setForm({ ...form, visitingFees: v })} 
+                min="0"
+                required
+              />
+              <Field 
+                type="number"
+                label="Approx Patient Count" 
+                value={form.approxPatientCount} 
+                onChange={(v) => setForm({ ...form, approxPatientCount: v })} 
+                min="0"
+                required
+              />
+            </div>
             
             <div className="block">
-              <span className="block text-sm font-medium text-gray-700 mb-1">Hospital</span>
+              <span className="block text-sm font-medium text-gray-700 mb-1">Select Organization (Hospital)</span>
               <select 
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={form.hospital} 
-                onChange={(e) => setForm({ ...form, hospital: e.target.value })} 
+                value={form.organization} 
+                onChange={(e) => setForm({ ...form, organization: e.target.value })} 
+                required
               >
                 <option value="">Select Hospital</option>
                 {hospitals.map(hospital => (
@@ -379,6 +742,31 @@ export default function RegisterDoctor() {
                 ))}
               </select>
             </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <Field 
+                type="password"
+                label="Password" 
+                value={form.password} 
+                onChange={(v) => setForm({ ...form, password: v })} 
+                required
+              />
+              <Field 
+                type="tel"
+                label="Phone Number" 
+                value={form.phone} 
+                onChange={(v) => setForm({ ...form, phone: v })} 
+                required
+              />
+            </div>
+            
+            <Field 
+              type="email" 
+              label="Email" 
+              value={form.email} 
+              onChange={(v) => setForm({ ...form, email: v })} 
+              required
+            />
             
             <div className="flex gap-3 pt-4">
               <button 
@@ -426,9 +814,18 @@ export default function RegisterDoctor() {
                 <div key={doctor._id} className="border rounded-lg p-4 hover:bg-gray-50">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">Dr. {doctor.firstName} {doctor.lastName}</h3>
+                      <h3 className="font-semibold text-lg">Dr. {doctor.name}</h3>
                       <p className="text-sm text-gray-600">
-                        <strong>Specialty:</strong> {doctor.specialty}
+                        <strong>Age:</strong> {doctor.age} | <strong>Gender:</strong> {doctor.gender}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Specialization:</strong> {doctor.specialization}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Experience:</strong> {doctor.experience} years
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Time Shift:</strong> {doctor.timeShift}
                       </p>
                       <p className="text-sm text-gray-600">
                         <strong>Email:</strong> {doctor.email}
@@ -436,14 +833,26 @@ export default function RegisterDoctor() {
                       <p className="text-sm text-gray-600">
                         <strong>Phone:</strong> {doctor.phone}
                       </p>
-                      {doctor.qualifications && doctor.qualifications.length > 0 && (
+                      <p className="text-sm text-gray-600">
+                        <strong>Address:</strong> {doctor.permanentAddress}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Location:</strong> {doctor.geoLocation?.latitude?.toFixed(6)}, {doctor.geoLocation?.longitude?.toFixed(6)}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Visiting Fees:</strong> ₹{doctor.visitingFees}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Patient Count:</strong> {doctor.approxPatientCount}
+                      </p>
+                      {doctor.degree && doctor.degree.length > 0 && (
                         <p className="text-sm text-gray-600">
-                          <strong>Qualifications:</strong> {doctor.qualifications.join(', ')}
+                          <strong>Degree:</strong> {doctor.degree.join(', ')}
                         </p>
                       )}
-                      {doctor.hospital && (
+                      {doctor.organization && (
                         <p className="text-sm text-gray-600">
-                          <strong>Hospital:</strong> {doctor.hospital.name}
+                          <strong>Hospital:</strong> {doctor.organization.name}
                         </p>
                       )}
                     </div>
@@ -474,7 +883,24 @@ export default function RegisterDoctor() {
   )
 }
 
-function Field({ label, value, onChange, type = "text", placeholder = "" }) {
+function Field({ label, value, onChange, type = "text", placeholder = "", required = false, ...props }) {
+  if (type === "textarea") {
+    return (
+      <label className="block">
+        <span className="block text-sm font-medium text-gray-700 mb-1">{label}</span>
+        <textarea 
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"
+          value={value} 
+          onChange={(e) => onChange(e.target.value)} 
+          placeholder={placeholder}
+          required={required}
+          {...props}
+        />
+      </label>
+    );
+  }
+
   return (
     <label className="block">
       <span className="block text-sm font-medium text-gray-700 mb-1">{label}</span>
@@ -484,8 +910,9 @@ function Field({ label, value, onChange, type = "text", placeholder = "" }) {
         value={value} 
         onChange={(e) => onChange(e.target.value)} 
         placeholder={placeholder}
-        required 
+        required={required}
+        {...props}
       />
     </label>
-  )
+  );
 }

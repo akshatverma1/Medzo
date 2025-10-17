@@ -1,34 +1,181 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import React from 'react';
+
+// Dynamic import for Leaflet to avoid SSR issues
+const DynamicMap = ({ center, onLocationSelect }) => {
+  const [MapContainer, setMapContainer] = useState(null);
+  const [TileLayer, setTileLayer] = useState(null);
+  const [Marker, setMarker] = useState(null);
+  const [Popup, setPopup] = useState(null);
+  const [useMapEvents, setUseMapEvents] = useState(null);
+
+  useEffect(() => {
+    const loadLeaflet = async () => {
+      const L = await import('leaflet');
+      await import('leaflet/dist/leaflet.css');
+      
+      // Fix for default markers in Next.js
+      delete L.Icon.Default.prototype._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      });
+
+      const { MapContainer: MC, TileLayer: TL, Marker: M, Popup: P, useMapEvents: UME } = await import('react-leaflet');
+      setMapContainer(() => MC);
+      setTileLayer(() => TL);
+      setMarker(() => M);
+      setPopup(() => P);
+      setUseMapEvents(() => UME);
+    };
+
+    loadLeaflet();
+  }, []);
+
+  // Map events component
+  const MapEvents = () => {
+    const map = useMapEvents({
+      click: (e) => {
+        const { lat, lng } = e.latlng;
+        onLocationSelect(lat, lng);
+      },
+    });
+    return null;
+  };
+
+  if (!MapContainer || !TileLayer || !Marker) {
+    return (
+      <div className="h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading map...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <MapContainer 
+      center={center} 
+      zoom={13} 
+      style={{ height: '100%', width: '100%' }}
+      className="rounded-lg"
+    >
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      />
+      <Marker position={center}>
+        <Popup>
+          Hospital Location <br />
+          Lat: {center[0].toFixed(6)}, Lng: {center[1].toFixed(6)}
+        </Popup>
+      </Marker>
+      <MapEvents />
+    </MapContainer>
+  );
+};
 
 export default function RegisterHospital() {
   const [form, setForm] = useState({ 
     name: "", 
-    address: {
-      city: "",
-      state: "", 
-      country: ""
+    type: "private",
+    fullAddress: "",
+    geoLocation: {
+      latitude: 0,
+      longitude: 0
     },
-    phone: "", 
-    email: "", 
-    capacityBeds: "", 
-    ventilatorCount: "",
-    equipment: "" 
+    website: "",
+    facilities: "",
+    equipment: "",
+    registrationId: "",
+    yearOfEstablishment: "",
+    staffCount: "",
+    password: "",
+    phone: "",
+    email: ""
   });
   
   const [hospitals, setHospitals] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   const API_BASE = 'http://127.0.0.1:3000';
 
   // Fetch hospitals on component mount
   useEffect(() => {
     fetchHospitals();
+    // Get current location for map
+    getCurrentLocation();
   }, []);
+
+  // Get current location for map
+  const getCurrentLocation = () => {
+    setIsGettingLocation(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setForm(prev => ({
+            ...prev,
+            geoLocation: {
+              latitude: lat,
+              longitude: lng
+            }
+          }));
+          setMapLoaded(true);
+          setIsGettingLocation(false);
+        },
+        (error) => {
+          console.log('Geolocation error:', error);
+          // Default to Delhi coordinates if geolocation fails
+          setForm(prev => ({
+            ...prev,
+            geoLocation: {
+              latitude: 28.6139,
+              longitude: 77.2090
+            }
+          }));
+          setMapLoaded(true);
+          setIsGettingLocation(false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      );
+    } else {
+      // Default to Delhi coordinates if geolocation not supported
+      setForm(prev => ({
+        ...prev,
+        geoLocation: {
+          latitude: 28.6139,
+          longitude: 77.2090
+        }
+      }));
+      setMapLoaded(true);
+      setIsGettingLocation(false);
+    }
+  };
+
+  // Handle location selection from map
+  const handleLocationSelect = (lat, lng) => {
+    setForm(prev => ({
+      ...prev,
+      geoLocation: {
+        latitude: lat,
+        longitude: lng
+      }
+    }));
+  };
 
   // Create or Update Hospital
   async function onSubmit(e) {
@@ -37,12 +184,24 @@ export default function RegisterHospital() {
     setError("");
     
     try {
-      // Format data for backend
+      // Format data for backend according to new schema
       const hospitalData = {
-        ...form,
-        capacityBeds: parseInt(form.capacityBeds) || 0,
-        ventilatorCount: parseInt(form.ventilatorCount) || 0,
-        equipment: form.equipment ? form.equipment.split(',').map(item => item.trim()) : []
+        name: form.name,
+        type: form.type,
+        fullAddress: form.fullAddress,
+        geoLocation: {
+          latitude: parseFloat(form.geoLocation.latitude),
+          longitude: parseFloat(form.geoLocation.longitude)
+        },
+        website: form.website,
+        facilities: form.facilities ? form.facilities.split(',').map(item => item.trim()) : [],
+        equipment: form.equipment ? form.equipment.split(',').map(item => item.trim()) : [],
+        registrationId: form.registrationId,
+        yearOfEstablishment: parseInt(form.yearOfEstablishment) || 0,
+        staffCount: parseInt(form.staffCount) || 0,
+        password: form.password,
+        phone: form.phone,
+        email: form.email
       };
 
       const url = editingId 
@@ -144,21 +303,27 @@ export default function RegisterHospital() {
       const hospital = await response.json();
       console.log('✅ Single hospital data:', hospital);
       
-      // Format data for form
+      // Format data for form according to new schema
       setForm({
         name: hospital.name || "",
-        address: {
-          city: hospital.address?.city || "",
-          state: hospital.address?.state || "",
-          country: hospital.address?.country || ""
+        type: hospital.type || "private",
+        fullAddress: hospital.fullAddress || "",
+        geoLocation: {
+          latitude: hospital.geoLocation?.latitude || 0,
+          longitude: hospital.geoLocation?.longitude || 0
         },
+        website: hospital.website || "",
+        facilities: hospital.facilities ? hospital.facilities.join(', ') : "",
+        equipment: hospital.equipment ? hospital.equipment.join(', ') : "",
+        registrationId: hospital.registrationId || "",
+        yearOfEstablishment: hospital.yearOfEstablishment?.toString() || "",
+        staffCount: hospital.staffCount?.toString() || "",
+        password: hospital.password || "",
         phone: hospital.phone || "",
-        email: hospital.email || "",
-        capacityBeds: hospital.capacityBeds?.toString() || "",
-        ventilatorCount: hospital.ventilatorCount?.toString() || "",
-        equipment: hospital.equipment ? hospital.equipment.join(', ') : ""
+        email: hospital.email || ""
       });
       setEditingId(hospital._id);
+      setMapLoaded(true);
     } catch (error) {
       console.error('💥 Error fetching hospital:', error);
       setError(`Failed to fetch hospital: ${error.message}`);
@@ -202,16 +367,21 @@ export default function RegisterHospital() {
     console.log('🔄 Resetting form');
     setForm({ 
       name: "", 
-      address: {
-        city: "",
-        state: "", 
-        country: ""
+      type: "private",
+      fullAddress: "",
+      geoLocation: {
+        latitude: form.geoLocation.latitude, // Keep current location
+        longitude: form.geoLocation.longitude
       },
-      phone: "", 
-      email: "", 
-      capacityBeds: "", 
-      ventilatorCount: "",
-      equipment: "" 
+      website: "",
+      facilities: "",
+      equipment: "",
+      registrationId: "",
+      yearOfEstablishment: "",
+      staffCount: "",
+      password: "",
+      phone: "",
+      email: ""
     });
     setEditingId(null);
     setError("");
@@ -219,22 +389,28 @@ export default function RegisterHospital() {
 
   function handleEdit(hospital) {
     console.log('✏️ Editing hospital:', hospital);
-    // Format data for form
+    // Format data for form according to new schema
     setForm({
       name: hospital.name || "",
-      address: {
-        city: hospital.address?.city || "",
-        state: hospital.address?.state || "",
-        country: hospital.address?.country || ""
+      type: hospital.type || "private",
+      fullAddress: hospital.fullAddress || "",
+      geoLocation: {
+        latitude: hospital.geoLocation?.latitude || 0,
+        longitude: hospital.geoLocation?.longitude || 0
       },
+      website: hospital.website || "",
+      facilities: hospital.facilities ? hospital.facilities.join(', ') : "",
+      equipment: hospital.equipment ? hospital.equipment.join(', ') : "",
+      registrationId: hospital.registrationId || "",
+      yearOfEstablishment: hospital.yearOfEstablishment?.toString() || "",
+      staffCount: hospital.staffCount?.toString() || "",
+      password: hospital.password || "",
       phone: hospital.phone || "",
-      email: hospital.email || "",
-      capacityBeds: hospital.capacityBeds?.toString() || "",
-      ventilatorCount: hospital.ventilatorCount?.toString() || "",
-      equipment: hospital.equipment ? hospital.equipment.join(', ') : ""
+      email: hospital.email || ""
     });
     setEditingId(hospital._id);
     setError("");
+    setMapLoaded(true);
   }
 
   function handleCancel() {
@@ -260,17 +436,6 @@ export default function RegisterHospital() {
       console.error('🔍 Connection test error:', error);
       alert('❌ Backend connection failed: ' + error.message);
     }
-  }
-
-  // Handle address field changes
-  function handleAddressChange(field, value) {
-    setForm({
-      ...form,
-      address: {
-        ...form.address,
-        [field]: value
-      }
-    });
   }
 
   // Log state changes
@@ -334,59 +499,208 @@ export default function RegisterHospital() {
               label="Hospital Name" 
               value={form.name} 
               onChange={(v) => setForm({ ...form, name: v })} 
+              required
             />
             
-            <div className="grid grid-cols-3 gap-4">
-              <Field 
-                label="City" 
-                value={form.address.city} 
-                onChange={(v) => handleAddressChange('city', v)} 
-              />
-              <Field 
-                label="State" 
-                value={form.address.state} 
-                onChange={(v) => handleAddressChange('state', v)} 
-              />
-              <Field 
-                label="Country" 
-                value={form.address.country} 
-                onChange={(v) => handleAddressChange('country', v)} 
-              />
+            <div>
+              <span className="block text-sm font-medium text-gray-700 mb-2">Hospital Type</span>
+              <div className="flex gap-4">
+                <label className="inline-flex items-center">
+                  <input 
+                    type="radio" 
+                    className="form-radio"
+                    value="private"
+                    checked={form.type === "private"}
+                    onChange={(e) => setForm({ ...form, type: e.target.value })}
+                  />
+                  <span className="ml-2">Private</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input 
+                    type="radio" 
+                    className="form-radio"
+                    value="gov"
+                    checked={form.type === "gov"}
+                    onChange={(e) => setForm({ ...form, type: e.target.value })}
+                  />
+                  <span className="ml-2">Government</span>
+                </label>
+              </div>
             </div>
             
             <Field 
-              type="email" 
-              label="Email" 
-              value={form.email} 
-              onChange={(v) => setForm({ ...form, email: v })} 
+              type="textarea"
+              label="Full Address" 
+              value={form.fullAddress} 
+              onChange={(v) => setForm({ ...form, fullAddress: v })} 
+              placeholder="Complete hospital address with street, city, state, and country"
+              required
             />
             
-            <Field 
-              label="Phone" 
-              value={form.phone} 
-              onChange={(v) => setForm({ ...form, phone: v })} 
-            />
+            {/* Geolocation Section */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <div className="flex justify-between items-center mb-3">
+                <span className="block text-sm font-medium text-gray-700">Location Selection</span>
+                <button 
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={getCurrentLocation}
+                  disabled={isGettingLocation}
+                >
+                  {isGettingLocation ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Getting Location...
+                    </>
+                  ) : (
+                    '📍 Get My Location'
+                  )}
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <span className="text-xs text-gray-500">Latitude</span>
+                  <input 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    type="number" 
+                    step="any"
+                    value={form.geoLocation.latitude} 
+                    onChange={(e) => setForm({ 
+                      ...form, 
+                      geoLocation: { 
+                        ...form.geoLocation, 
+                        latitude: parseFloat(e.target.value) || 0 
+                      } 
+                    })} 
+                    required
+                  />
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500">Longitude</span>
+                  <input 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    type="number" 
+                    step="any"
+                    value={form.geoLocation.longitude} 
+                    onChange={(e) => setForm({ 
+                      ...form, 
+                      geoLocation: { 
+                        ...form.geoLocation, 
+                        longitude: parseFloat(e.target.value) || 0 
+                      } 
+                    })} 
+                    required
+                  />
+                </div>
+              </div>
+              
+              <p className="text-xs text-gray-500 mb-3">
+                Click on the map below to set location, or use "Get My Location" button
+              </p>
+            </div>
+
+            {/* Interactive Map */}
+            {mapLoaded && (
+              <div className="border rounded-lg p-4 bg-white">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Select Location on Map</h4>
+                <div className="h-64 rounded-lg overflow-hidden">
+                  <DynamicMap 
+                    center={[form.geoLocation.latitude, form.geoLocation.longitude]}
+                    onLocationSelect={handleLocationSelect}
+                  />
+                </div>
+                <div className="mt-2 text-center">
+                  <p className="text-sm text-gray-600">
+                    Current: Lat: {form.geoLocation.latitude.toFixed(6)}, Lng: {form.geoLocation.longitude.toFixed(6)}
+                  </p>
+                  <a 
+                    href={`https://www.openstreetmap.org/?mlat=${form.geoLocation.latitude}&mlon=${form.geoLocation.longitude}#map=15/${form.geoLocation.latitude}/${form.geoLocation.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 text-sm underline mt-1 inline-block"
+                  >
+                    View on OpenStreetMap
+                  </a>
+                </div>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-2 gap-4">
+              <Field 
+                type="url"
+                label="Website URL" 
+                value={form.website} 
+                onChange={(v) => setForm({ ...form, website: v })} 
+                placeholder="https://example.com"
+              />
+              <Field 
+                label="Registration ID" 
+                value={form.registrationId} 
+                onChange={(v) => setForm({ ...form, registrationId: v })} 
+                required
+              />
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
               <Field 
                 type="number"
-                label="Bed Capacity" 
-                value={form.capacityBeds} 
-                onChange={(v) => setForm({ ...form, capacityBeds: v })} 
+                label="Year of Establishment" 
+                value={form.yearOfEstablishment} 
+                onChange={(v) => setForm({ ...form, yearOfEstablishment: v })} 
+                min="1800"
+                max="2030"
+                required
               />
               <Field 
                 type="number"
-                label="Ventilator Count" 
-                value={form.ventilatorCount} 
-                onChange={(v) => setForm({ ...form, ventilatorCount: v })} 
+                label="Staff Count" 
+                value={form.staffCount} 
+                onChange={(v) => setForm({ ...form, staffCount: v })} 
+                min="1"
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <Field 
+                type="password"
+                label="Password" 
+                value={form.password} 
+                onChange={(v) => setForm({ ...form, password: v })} 
+                required
+              />
+              <Field 
+                type="tel"
+                label="Phone Number" 
+                value={form.phone} 
+                onChange={(v) => setForm({ ...form, phone: v })} 
+                required
               />
             </div>
             
             <Field 
+              type="email"
+              label="Email" 
+              value={form.email} 
+              onChange={(v) => setForm({ ...form, email: v })} 
+              required
+            />
+            
+            <Field 
+              type="textarea"
+              label="Facilities (comma separated)" 
+              value={form.facilities} 
+              onChange={(v) => setForm({ ...form, facilities: v })} 
+              placeholder="ICU, Emergency, Pharmacy, Lab, Operation Theater"
+            />
+            
+            <Field 
+              type="textarea"
               label="Equipment (comma separated)" 
               value={form.equipment} 
               onChange={(v) => setForm({ ...form, equipment: v })} 
-              placeholder="MRI, CT Scanner, X-Ray, ICU"
+              placeholder="MRI, CT Scanner, X-Ray, Ventilator, ECG"
             />
             
             <div className="flex gap-3 pt-4">
@@ -437,7 +751,13 @@ export default function RegisterHospital() {
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg">{hospital.name}</h3>
                       <p className="text-sm text-gray-600">
-                        <strong>Address:</strong> {hospital.address?.city}, {hospital.address?.state}, {hospital.address?.country}
+                        <strong>Type:</strong> {hospital.type === 'gov' ? 'Government' : 'Private'}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Address:</strong> {hospital.fullAddress}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Location:</strong> {hospital.geoLocation?.latitude?.toFixed(6)}, {hospital.geoLocation?.longitude?.toFixed(6)}
                       </p>
                       <p className="text-sm text-gray-600">
                         <strong>Email:</strong> {hospital.email}
@@ -446,11 +766,27 @@ export default function RegisterHospital() {
                         <strong>Phone:</strong> {hospital.phone}
                       </p>
                       <p className="text-sm text-gray-600">
-                        <strong>Bed Capacity:</strong> {hospital.capacityBeds}
+                        <strong>Registration ID:</strong> {hospital.registrationId}
                       </p>
                       <p className="text-sm text-gray-600">
-                        <strong>Ventilators:</strong> {hospital.ventilatorCount}
+                        <strong>Established:</strong> {hospital.yearOfEstablishment}
                       </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Staff Count:</strong> {hospital.staffCount}
+                      </p>
+                      {hospital.website && (
+                        <p className="text-sm text-gray-600">
+                          <strong>Website:</strong> 
+                          <a href={hospital.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 ml-1">
+                            {hospital.website}
+                          </a>
+                        </p>
+                      )}
+                      {hospital.facilities && hospital.facilities.length > 0 && (
+                        <p className="text-sm text-gray-600">
+                          <strong>Facilities:</strong> {hospital.facilities.join(', ')}
+                        </p>
+                      )}
                       {hospital.equipment && hospital.equipment.length > 0 && (
                         <p className="text-sm text-gray-600">
                           <strong>Equipment:</strong> {hospital.equipment.join(', ')}
@@ -484,7 +820,24 @@ export default function RegisterHospital() {
   )
 }
 
-function Field({ label, value, onChange, type = "text", placeholder = "" }) {
+function Field({ label, value, onChange, type = "text", placeholder = "", required = false, ...props }) {
+  if (type === "textarea") {
+    return (
+      <label className="block">
+        <span className="block text-sm font-medium text-gray-700 mb-1">{label}</span>
+        <textarea 
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"
+          value={value} 
+          onChange={(e) => onChange(e.target.value)} 
+          placeholder={placeholder}
+          required={required}
+          {...props}
+        />
+      </label>
+    );
+  }
+
   return (
     <label className="block">
       <span className="block text-sm font-medium text-gray-700 mb-1">{label}</span>
@@ -494,8 +847,9 @@ function Field({ label, value, onChange, type = "text", placeholder = "" }) {
         value={value} 
         onChange={(e) => onChange(e.target.value)} 
         placeholder={placeholder}
-        required={type !== "number"}
+        required={required}
+        {...props}
       />
     </label>
-  )
+  );
 }

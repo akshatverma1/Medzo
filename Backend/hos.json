@@ -1,72 +1,146 @@
 [
   {
-    "name": "City Care Hospital",
-    "address": {
-      "city": "Delhi",
-      "state": "Delhi",
-      "country": "India"
-    },
-    "phone": "011-23456789",
-    "email": "contact@citycarehospital.com",
-    "capacityBeds": 150,
-    "ventilatorCount": 20,
-    "equipment": ["ECG Machine", "X-Ray", "MRI Scanner", "Ventilators"],
-    "createdAt": "2025-10-14T10:00:00Z"
+    "msg": "Hi, I need O+ blood urgently for my brother, can anyone help?",
+    "sender": "Rahul Sharma",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T08:30:00Z"
   },
   {
-    "name": "Sunrise Medical Center",
-    "address": {
-      "city": "Mumbai",
-      "state": "Maharashtra",
-      "country": "India"
-    },
-    "phone": "022-98765432",
-    "email": "info@sunrisemedical.com",
-    "capacityBeds": 200,
-    "ventilatorCount": 35,
-    "equipment": ["Ultrasound", "CT Scanner", "Ventilators", "Defibrillator"],
-    "createdAt": "2025-10-14T11:00:00Z"
+    "msg": "I have O+ blood available, contact me at +919812345001",
+    "sender": "Suresh Patil",
+    "receiver": "Rahul Sharma",
+    "createdAt": "2025-10-16T08:32:00Z"
   },
   {
-    "name": "Green Valley Hospital",
-    "address": {
-      "city": "Bengaluru",
-      "state": "Karnataka",
-      "country": "India"
-    },
-    "phone": "080-12345678",
-    "email": "contact@greenvalleyhospital.com",
-    "capacityBeds": 120,
-    "ventilatorCount": 15,
-    "equipment": ["ECG Machine", "X-Ray", "Laboratory Equipment", "Ventilators"],
-    "createdAt": "2025-10-14T12:00:00Z"
+    "msg": "Is there any hospital near Gurugram open 24 hours?",
+    "sender": "Sneha Verma",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T08:45:00Z"
   },
   {
-    "name": "Hope Multispeciality Hospital",
-    "address": {
-      "city": "Ahmedabad",
-      "state": "Gujarat",
-      "country": "India"
-    },
-    "phone": "079-87654321",
-    "email": "info@hopemultihospital.com",
-    "capacityBeds": 180,
-    "ventilatorCount": 25,
-    "equipment": ["MRI Scanner", "CT Scanner", "Ventilators", "Dialysis Machine"],
-    "createdAt": "2025-10-14T09:30:00Z"
+    "msg": "Medanta Gurugram and Paras Hospital are open 24x7 for emergencies.",
+    "sender": "Amit Yadav",
+    "receiver": "Sneha Verma",
+    "createdAt": "2025-10-16T08:47:00Z"
   },
   {
-    "name": "Lakeside Hospital",
-    "address": {
-      "city": "Chennai",
-      "state": "Tamil Nadu",
-      "country": "India"
-    },
-    "phone": "044-34567890",
-    "email": "contact@lakesidehospital.com",
-    "capacityBeds": 100,
-    "ventilatorCount": 10,
-    "equipment": ["X-Ray", "Ultrasound", "Ventilators", "Laboratory Equipment"],
-    "createdAt": "2025-10-14T08:45:00Z"
+    "msg": "Can someone tell me where I can get a COVID test report quickly?",
+    "sender": "Ankit Tiwari",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T09:00:00Z"
+  },
+  {
+    "msg": "Fortis Noida does same-day reports, I got mine there last week.",
+    "sender": "Priya Anand",
+    "receiver": "Ankit Tiwari",
+    "createdAt": "2025-10-16T09:02:00Z"
+  },
+  {
+    "msg": "I need B negative blood for a surgery tomorrow, please respond soon.",
+    "sender": "Pooja Mishra",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T09:15:00Z"
+  },
+  {
+    "msg": "AIIMS blood bank usually has B- available, call them ASAP.",
+    "sender": "Rohit Jain",
+    "receiver": "Pooja Mishra",
+    "createdAt": "2025-10-16T09:18:00Z"
+  },
+  {
+    "msg": "Where can I book an appointment with a neurologist in Delhi?",
+    "sender": "Arun Kumar",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T09:25:00Z"
+  },
+  {
+    "msg": "You can try Max Hospital Saket or AIIMS, they have online booking.",
+    "sender": "Kavita Rao",
+    "receiver": "Arun Kumar",
+    "createdAt": "2025-10-16T09:28:00Z"
+  },
+  {
+    "msg": "My mother has a fever for 3 days, should I get a dengue test done?",
+    "sender": "Riya Gupta",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T09:40:00Z"
+  },
+  {
+    "msg": "Yes, better get tested. My cousin had similar symptoms and it was dengue.",
+    "sender": "Manish Khanna",
+    "receiver": "Riya Gupta",
+    "createdAt": "2025-10-16T09:42:00Z"
+  },
+  {
+    "msg": "Can anyone suggest a good child specialist near Noida Sector 62?",
+    "sender": "Neha Sinha",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T09:55:00Z"
+  },
+  {
+    "msg": "Dr. Sneha Patel at Fortis Noida is great, my nephew visits her.",
+    "sender": "Rohit Mehra",
+    "receiver": "Neha Sinha",
+    "createdAt": "2025-10-16T09:57:00Z"
+  },
+  {
+    "msg": "I need A+ blood at Medanta Hospital urgently.",
+    "sender": "Simran Kaur",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T10:00:00Z"
+  },
+  {
+    "msg": "I can donate A+ blood, contact me at +919812345002",
+    "sender": "Vikram Patel",
+    "receiver": "Simran Kaur",
+    "createdAt": "2025-10-16T10:03:00Z"
+  },
+  {
+    "msg": "Is Max Hospital accepting emergency patients right now?",
+    "sender": "Karan Singh",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T10:10:00Z"
+  },
+  {
+    "msg": "Yes, I visited last night, they were taking emergencies.",
+    "sender": "Aman Verma",
+    "receiver": "Karan Singh",
+    "createdAt": "2025-10-16T10:12:00Z"
+  },
+  {
+    "msg": "How much does an MRI cost at Fortis Noida?",
+    "sender": "Priya Anand",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T10:25:00Z"
+  },
+  {
+    "msg": "It cost me around ₹5000 for a brain MRI last month.",
+    "sender": "Sakshi Sharma",
+    "receiver": "Priya Anand",
+    "createdAt": "2025-10-16T10:27:00Z"
+  },
+  {
+    "msg": "Can I get a COVID booster dose at AIIMS Delhi?",
+    "sender": "Deepak Chauhan",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T10:40:00Z"
+  },
+  {
+    "msg": "Yes, I got mine last week, visit between 9 AM to 2 PM with ID.",
+    "sender": "Ritu Mehta",
+    "receiver": "Deepak Chauhan",
+    "createdAt": "2025-10-16T10:43:00Z"
+  },
+  {
+    "msg": "Where can I get a blood sugar test done in Gurugram?",
+    "sender": "Rohit Jain",
+    "receiver": "Open Chat",
+    "createdAt": "2025-10-16T11:10:00Z"
+  },
+  {
+    "msg": "Medanta Lab and Paras Hospital offer walk-in tests, I used them last month.",
+    "sender": "Tanvi Kapoor",
+    "receiver": "Rohit Jain",
+    "createdAt": "2025-10-16T11:12:00Z"
   }
 ]

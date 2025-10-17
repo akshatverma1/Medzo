@@ -23,12 +23,13 @@ export default function DoctorLoginPage() {
 
   return (
     <main className="container mx-auto max-w-5xl px-4 py-10">
-      <header className="mb-8">
+      {/* <header className="mb-8">
         <h1 className="text-3xl font-semibold text-pretty">Doctor Login</h1>
         <p className="text-muted-foreground">Manage schedules, patients, and approvals.</p>
       </header>
-      
+       */}
       {/* Custom Login Form */}
+      <div style={{height:"5rem"}}></div>
       <div className="max-w-md mx-auto">
         <div className="card p-6 shadow-lg border border-gray-200 rounded-lg">
           <h2 className="text-2xl font-bold text-center mb-6">Welcome Back, Doctor</h2>
