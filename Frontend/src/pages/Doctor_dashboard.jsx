@@ -16,7 +16,7 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
 
-  const API_BASE = 'http://127.0.0.1:3000';
+  const API_BASE = 'http://localhost:3000';
 
   // Mock doctor data (in real app, this would come from auth context)
   const currentDoctorId = "mock-doctor-id";

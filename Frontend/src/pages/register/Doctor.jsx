@@ -111,7 +111,7 @@ export default function RegisterDoctor() {
   const [mapLoaded, setMapLoaded] = useState(false);
 
   // Use your API base URL - Fixed to port 5000
-  const API_BASE = 'http://127.0.0.1:3000';
+  const API_BASE = 'http://localhost:3000';
 
   // Fetch doctors and hospitals on component mount
   useEffect(() => {

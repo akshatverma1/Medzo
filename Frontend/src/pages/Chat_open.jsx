@@ -10,7 +10,7 @@ export default function OpenChatPage() {
   const [error, setError] = useState("");
   const messagesEndRef = useRef(null);
 
-  const API_BASE = 'http://127.0.0.1:3000';
+  const API_BASE = 'http://localhost:3000';
 
   // Load messages and set random name on component mount
   useEffect(() => {

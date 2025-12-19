@@ -114,7 +114,7 @@ export default function Dashboard() {
     revenue: 0
   });
 
-  const API_BASE = 'http://127.0.0.1:3000';
+  const API_BASE = 'http://localhost:3000';
 
   // Default center for map (New Delhi)
   const defaultCenter = [28.6139, 77.2090];
